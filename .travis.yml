@@ -53,10 +53,10 @@ jobs:
 
 before_install:
   - env
+  - python3 -m pip freeze
 
 install:
-  - python3 -m pip install --index-url $TWINE_REPOSITORY_URL --trusted-host $TWINE_HOST --only-binary numpy,scipy -r hiq_projectq.txt
-  - python3 -m pip install --index-url $TWINE_REPOSITORY_URL --trusted-host $TWINE_HOST --only-binary mpi4py -r hiq_circuit.txt
+  - python3 -m pip install --only-binary numpy,scipy -r hiq_projectq.txt
   - python3 -m pip install --index-url $TWINE_REPOSITORY_URL --trusted-host $TWINE_HOST --only-binary hiq-projectq,hiq-circuit hiq-circuit
 
 script:
