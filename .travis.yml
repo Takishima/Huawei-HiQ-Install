@@ -1,0 +1,64 @@
+addons:
+  apt:
+    # update: true
+    packages:
+      - python3-mpi4py
+      - python3
+
+  homebrew:
+    # update: true
+    packages:
+      - mpi4py
+      - python
+
+env:
+  global:
+    - OMP_NUM_THREADS=1
+
+os: linux
+language: python
+
+python:
+  - 3.5
+  - 3.6
+  - 3.7
+
+jobs:
+  include:
+  - os: linux
+    arch: amd64
+    python: 3.8.3
+  - os: linux
+    arch: arm64
+    python: 3.8.3
+    before_install:
+      # work around cache dir owned by root (see https://travis-ci.community/t/7822/6)
+      - sudo chown -fR $USER:$GROUP ~/.cache/pip/wheels
+  - os: osx
+    osx_image: xcode11.6
+    language: shell
+    name: "Mac OS Python Homebrew"
+  - os: windows
+    name: "Windows Python 3.8"
+    language: shell
+    before_install:
+      - unset CC CXX
+      - choco install python3 --version 3.8.3
+      - ln -s /c/Python38/python.exe /c/Python38/python3.exe
+      - python3 -m pip install --upgrade pip
+    # env: PATH="/c/Python38:/c/Python38/Scripts:/c/Program\\ Files/git/usr/bin/:$PATH" WIN_DEPLOY=1
+    env: PATH=/c/Python38:/c/Python38/Scripts:$PATH WIN_DEPLOY=1
+
+# ==============================================================================
+
+before_install:
+  - env
+
+install:
+  - python3 -m pip install --index-url $TWINE_REPOSITORY_URL --trusted-host $TWINE_HOST --only-binary numpy,scipy -r hiq_projectq.txt
+  - python3 -m pip install --index-url $TWINE_REPOSITORY_URL --trusted-host $TWINE_HOST --only-binary mpi4py -r hiq_circuit.txt
+  - python3 -m pip install --index-url $TWINE_REPOSITORY_URL --trusted-host $TWINE_HOST --only-binary hiq-projectq,hiq-circuit hiq-circuit
+
+script:
+  - python3 -c 'from projectq.backends import Simulator; sim = Simulator(10)'
+  - python3 -c 'from projectq.cengines import HiQMainEngine'
